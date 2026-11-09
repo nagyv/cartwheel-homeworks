@@ -52,8 +52,22 @@ def get_policy(ctx: AuthContext, policy_id: str) -> dict[str, Any]:
     Implementation notes:
         agent.helpcenter.load_policy_docs() returns every parsed doc.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement get_policy")
+    policy_docs = load_policy_docs()
+    policy_doc = next((doc for doc in policy_docs if doc.policy_id == policy_id), None)
+    if not policy_doc:
+       return {
+	 "ok": False,
+	 "error": "not_found",
+         "reason": f"No policy {policy_id} exists"
+       }
+
+    return {
+	"ok": True,
+        "policy_id": policy_id,
+        "title": policy_doc.title,
+        "audience": policy_doc.audience,
+        "body": policy_doc.body
+    }
 
 
 def search_products(
@@ -95,6 +109,13 @@ def search_products(
         agent.db.list_products(conn, store_id) gives the candidate set.
         Use `with db.connection() as conn:` to close the database automatically.
     """
+    if query.strip() is None:
+       return {
+         "ok": False,
+         "error": "invalid_argument",
+         "reason": "Empty query given"
+       }
+
     ### YOUR CODE HERE (HW1)
     raise NotImplementedError("HW1: implement search_products")
 
