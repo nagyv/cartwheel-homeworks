@@ -109,15 +109,46 @@ def search_products(
         agent.db.list_products(conn, store_id) gives the candidate set.
         Use `with db.connection() as conn:` to close the database automatically.
     """
-    if query.strip() is None:
-       return {
-         "ok": False,
-         "error": "invalid_argument",
-         "reason": "Empty query given"
-       }
+    tokens = query.lower().split()
+    if not tokens:
+        return {
+            "ok": False,
+            "error": "invalid_argument",
+            "reason": "Empty query given",
+        }
+    if max_price_usd is not None and max_price_usd <= 0:
+        return {
+            "ok": False,
+            "error": "invalid_argument",
+            "reason": f"max_price_usd must be positive, got {max_price_usd}",
+        }
 
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement search_products")
+    with db.connection() as conn:
+        store_id = None
+        if store is not None:
+            found = db.get_store_by_name(conn, store)
+            if found is None:
+                return {"ok": False, "error": "not_found", "reason": f"No store named {store!r}"}
+            store_id = found.id
+        candidates = db.list_products(conn, store_id)
+
+    def matches(product: db.Product) -> bool:
+        text = f"{product.title}\n{product.description}".lower()
+        within_budget = max_price_usd is None or product.price_usd <= max_price_usd
+        return within_budget and all(token in text for token in tokens)
+
+    bounded_limit = max(1, min(limit, MAX_SEARCH_LIMIT))
+    ranked = sorted(filter(matches, candidates), key=lambda p: (p.price_usd, p.id))
+    products = [
+        {
+            "product_id": p.id,
+            "store_id": p.store_id,
+            "title": p.title,
+            "price_usd": p.price_usd,
+        }
+        for p in ranked[:bounded_limit]
+    ]
+    return {"ok": True, "products": products, "count": len(products)}
 
 
 def list_my_orders(ctx: AuthContext) -> dict[str, Any]:
