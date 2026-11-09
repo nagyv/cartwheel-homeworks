@@ -18,6 +18,8 @@ They are marked xfail and flip to passing as you implement each function.
 
 from __future__ import annotations
 
+import difflib
+import re
 from typing import Any
 
 from agent import db
@@ -27,6 +29,44 @@ from agent.killswitch import kill_switch
 
 MAX_SEARCH_LIMIT = 25
 DEFAULT_ORDER_LIMIT = 20
+MAX_FIND_ORDER_RESULTS = 5
+FUZZY_WORD_CUTOFF = 0.8
+QUERY_FILLER_WORDS = frozenset(
+    """
+    a an and at for from i in it me my of on our that the these this those to we with you
+    buy bought find get got look looking order ordered orders purchase purchased show
+    item one ones stuff thing things
+    ago day days earlier last month past recent recently today week year yesterday
+    """.split()
+)
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def _product_words(query: str) -> list[str]:
+    return [word for word in _words(query) if word not in QUERY_FILLER_WORDS]
+
+
+def _title_matches(title: str, words: list[str]) -> bool:
+    lowered = title.lower()
+    title_words = _words(title)
+    return all(
+        word in lowered
+        or difflib.get_close_matches(word, title_words, n=1, cutoff=FUZZY_WORD_CUTOFF)
+        for word in words
+    )
+
+
+def _order_search_scope(ctx: AuthContext) -> dict[str, Any] | None:
+    if ctx.role == "shopper" and ctx.user_id is not None:
+        return {"user_id": ctx.user_id}
+    if ctx.role == "merchant" and ctx.store_id is not None:
+        return {"store_id": ctx.store_id}
+    if ctx.role == "support":
+        return {"all_orders": True}
+    return None
 
 
 def get_policy(ctx: AuthContext, policy_id: str) -> dict[str, Any]:
@@ -288,5 +328,23 @@ def find_order(ctx: AuthContext, query: str) -> dict[str, Any]:
         (at most 5), each as the dict returned by agent.db. If no orders
         match, return {"ok": True, "orders": []}.
     """
-    ### YOUR CODE HERE (HW1)
-    raise NotImplementedError("HW1: implement find_order")
+    scope = _order_search_scope(ctx)
+    if scope is None:
+        return permission_denied(
+            f"role '{ctx.role}' (user {ctx.user_id}) has no order search scope"
+        )
+
+    words = _product_words(query)
+    if not words:
+        return {"ok": True, "orders": []}
+
+    with db.connection() as conn:
+        candidates = db.list_order_search_candidates(conn, **scope)
+        matching_product_ids = {
+            product.id
+            for product in db.list_products(conn)
+            if _title_matches(product.title, words)
+        }
+
+    matches = [order for order in candidates if order.product_id in matching_product_ids]
+    return {"ok": True, "orders": [order.to_public_dict() for order in matches[:MAX_FIND_ORDER_RESULTS]]}
