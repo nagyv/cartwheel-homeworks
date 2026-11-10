@@ -9,10 +9,11 @@ First push: `git push -u origin wip/hw2`.
 - Step 1: `uv sync` (environment already matched the lock file)
 - Step 2: concepts (trace, span, `gen_ai.*` vs `cartwheel.*`)
 - Part A: code written; no offline test by Viktor's choice, verify in Langfuse in Part E
+- Part B: `create_session` written; `create_session_binds` test passes
 
 ## Next
 
-- Part B: `create_session` (and why the server decides identity)
+- Part C: `post_message` (root span, prompt version)
 - Before Part E: produce `hw1-session.jsonl` from observed runs (requests drafted by Claude and approved by Viktor; `tool_calls`/`response` from real runs; assessment fields left `"PENDING"` for Viktor)
 
 ## Known issue (existed before HW2, left as is by Viktor's choice)
@@ -22,7 +23,7 @@ First push: `git push -u origin wip/hw2`.
 ## Deliverables checklist
 
 - [x] Part A: `record_tool_result`, `_set_permission_denied_attributes` in `observability/instrument.py`
-- [ ] Part B: `create_session` in `server/app.py`; `uv run pytest --runxfail -vv tests/test_hw_holes.py -k "create_session_binds"` passes
+- [x] Part B: `create_session` in `server/app.py`; `uv run pytest --runxfail -vv tests/test_hw_holes.py -k "create_session_binds"` passes
 - [ ] Part C: `post_message` in `server/app.py`
 - [ ] Part D: `tests/test_observability.py` (wrong-role rejection, cross-session token rejection)
 - [ ] Part D checks: `uv run pytest --runxfail tests/test_hw_holes.py -k hw2`, `uv run pytest tests/test_observability.py`, `uv run pytest`
