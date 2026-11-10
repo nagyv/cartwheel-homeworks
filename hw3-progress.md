@@ -4,7 +4,7 @@ Interactive walkthrough of `homework/module-1/hw3.md`. Claude proposes each step
 
 ## Next
 
-- Part B: propose how the 30 pilot scenarios are planned, generated, critiqued and validated; then Viktor reviews a conversation sample before the run
+- Part B: Viktor reviews `scenarios/plans/pilot_plan.jsonl`; then the writer subagents (Sonnet, `scenarios/prompts/writer.md`) and the critic subagents (Opus, `scenarios/prompts/critic.md`) run, one per scenario
 
 ## Done
 
@@ -12,6 +12,14 @@ Interactive walkthrough of `homework/module-1/hw3.md`. Claude proposes each step
 - Step 1: kept `claude-haiku-5-5` (Viktor's choice); seeded; Langfuse up; server on :8010 (Claude runs it in the background); smoke scenario `smoke-0001` (scratchpad only) produced a trace with messages, model, `list_my_orders` call and result, scenario id, token usage; reseeded afterwards
 
 - Step 2: dimension plan approved by Viktor (see "Approved dimension plan")
+- Step 3, stage A: prompts written (one-shot, as Viktor asked); `scripts/hw3/plan_scenarios.py pilot` wrote 30 plan lines (18 coverage, 12 challenge; 14 shopper, 8 merchant, 8 support). The Northwind slot was widened from 35-44 to 31-44 days because no order under $100 matched
+
+## Generation method (Viktor's decision)
+
+- Stage A: plan and answer keys from SQL, `facts.yaml` and `seed/eligibility.py` (no LLM): `uv run python -m scripts.hw3.plan_scenarios pilot scenarios/plans/pilot_plan.jsonl`
+- Stage B: one Sonnet writer subagent per scenario, `scenarios/prompts/writer.md`
+- Stage C: one Opus critic subagent per scenario, `scenarios/prompts/critic.md`; Claude then checks the whole set for shared phrasing
+- The same prompts are reused for the final 250
 
 ## Approved dimension plan (Part A, approved by Viktor)
 
