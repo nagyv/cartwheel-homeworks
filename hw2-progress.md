@@ -13,11 +13,14 @@ First push: `git push -u origin wip/hw2`.
 - Part C: `post_message` written (root span `cartwheel.session_message`, reply key `reply`); verify live in Part E
 - Part D: `tests/test_observability.py` (2 tests via `TestClient`, pass); added dev dependency `httpx2` to remove Starlette's deprecation warning
 - Removed the xfail markers from the HW1/HW2 contract tests (now ordinary tests)
+- Part E: Langfuse in Docker (project `cartwheel-dev`, login `student@example.com`); 6 traced requests (hw1 #1, #3, #4, #5, #8, #9); every root and tool span checked against the Part A/C rules, all OK. Denial in hw1 #4: trace `7323baf91f08afc9baa93206692c6ad6`
+- Token counts: OpenLLMetry 0.62.3 ignores `GenerationSpanData.usage` on the LiteLLM path; fixed with `_GenerationUsageProcessor` in `observability/instrument.py` plus an offline test; confirmed live (trace `74594d074a9b2704dc03da76ff0fd702`)
 - `hw1-session.jsonl`: 10 observed conversations (live `claude-haiku-5-5`, reseeded before each). The four assessment fields are `"PENDING"` for Viktor
 
 ## Next
 
-- Part E: start Langfuse + server, send at least 5 requests from `hw1-session.jsonl`, inspect traces
+- Part F: prompt version comparison (baseline hash `d108f6949e5e`)
+- Trace record: `hw2-traces.json`
 
 ## Known issue (existed before HW2, left as is by Viktor's choice)
 
@@ -30,7 +33,7 @@ First push: `git push -u origin wip/hw2`.
 - [x] Part C: `post_message` in `server/app.py`
 - [x] Part D: `tests/test_observability.py` (wrong-role rejection, cross-session token rejection)
 - [ ] Part D checks (first two pass; full suite blocked by the known issue): `uv run pytest --runxfail tests/test_hw_holes.py -k hw2`, `uv run pytest tests/test_observability.py`, `uv run pytest`
-- [ ] Part E: at least 5 traced requests from `hw1-session.jsonl`, inspected in Langfuse
+- [x] Part E: at least 5 traced requests from `hw1-session.jsonl`, inspected in Langfuse
 - [ ] Part F: two prompt version hashes recorded; original prompt restored
 - [ ] `hw2-traces.json`: exactly 2 traces with the 7 required fields
 - [ ] Video (Viktor)
