@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from agents.tracing import set_trace_processors
+from agents.tracing import GenerationSpanData, TracingProcessor, set_trace_processors
 from agents.tracing.processors import default_processor
 from opentelemetry import trace
 
@@ -52,6 +52,41 @@ def setup_openai_tracing() -> bool:
 
 
 
+class _GenerationUsageProcessor(TracingProcessor):
+    """Copy LiteLLM token usage onto the OTel model span before it ends.
+
+    OpenLLMetry reads usage only from ResponseSpanData.response, so the
+    GenerationSpanData emitted by LitellmModel reaches Langfuse with no
+    gen_ai.usage.* attributes. This processor must run before OpenLLMetry's,
+    which ends the OTel span in its own on_span_end.
+    """
+
+    def on_span_end(self, span: Any) -> None:
+        data = span.span_data
+        if not isinstance(data, GenerationSpanData) or not data.usage:
+            return
+        otel_span = trace.get_current_span()
+        if not otel_span.is_recording():
+            return
+        otel_span.set_attribute("gen_ai.usage.input_tokens", data.usage.get("input_tokens", 0))
+        otel_span.set_attribute("gen_ai.usage.output_tokens", data.usage.get("output_tokens", 0))
+
+    def on_trace_start(self, trace_: Any) -> None:
+        pass
+
+    def on_trace_end(self, trace_: Any) -> None:
+        pass
+
+    def on_span_start(self, span: Any) -> None:
+        pass
+
+    def shutdown(self) -> None:
+        pass
+
+    def force_flush(self) -> None:
+        pass
+
+
 def instrument_genai(tracer_provider: Any) -> None:
     """Install GenAI recording once, using the supplied OTel provider."""
     global _genai_instrumented
@@ -61,7 +96,8 @@ def instrument_genai(tracer_provider: Any) -> None:
 
     os.environ.setdefault("TRACELOOP_TRACE_CONTENT", "false")
     # Export only through Langfuse, not the SDK's separate hosted tracing path.
-    instrumentor = OpenAIAgentsInstrumentor(replace_existing_processors=True)
+    set_trace_processors([_GenerationUsageProcessor()])
+    instrumentor = OpenAIAgentsInstrumentor(replace_existing_processors=False)
     instrumentor.instrument(tracer_provider=tracer_provider)
     if not instrumentor.is_instrumented_by_opentelemetry:
         raise RuntimeError("OpenAI Agents tracing instrumentation failed to install")
@@ -122,10 +158,11 @@ def record_tool_result(ctx: "AuthContext", result: dict[str, Any]) -> None:
     span = trace.get_current_span()
     if not span.is_recording():
         return
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError(
-        "HW2: add authenticated caller and permission attributes to the tool span"
-    )
+    span.set_attribute("cartwheel.user_role", ctx.role)
+    span.set_attribute("cartwheel.user_id", str(ctx.user_id))
+    if ctx.role == "merchant":
+        span.set_attribute("cartwheel.store_id", str(ctx.store_id))
+    _set_permission_denied_attributes(span, result)
 
 
 def _set_permission_denied_attributes(
@@ -149,5 +186,9 @@ def _set_permission_denied_attributes(
     the smoke report counts them and Module 3 asserts on them. This is the one place in the
     course where you touch instrumentation by hand.
     """
-    ### YOUR CODE HERE (HW2)
-    raise NotImplementedError("HW2: set the cartwheel.permission_denied span attribute")
+    denied = isinstance(result, dict) and result.get("error") == "permission_denied"
+    span.set_attribute("cartwheel.permission_denied", denied)
+    if denied:
+        span.set_attribute(
+            "cartwheel.permission_denied.reason", str(result.get("reason") or "")
+        )
