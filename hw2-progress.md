@@ -15,11 +15,11 @@ First push: `git push -u origin wip/hw2`.
 - Removed the xfail markers from the HW1/HW2 contract tests (now ordinary tests)
 - Part E: Langfuse in Docker (project `cartwheel-dev`, login `student@example.com`); 6 traced requests (hw1 #1, #3, #4, #5, #8, #9); every root and tool span checked against the Part A/C rules, all OK. Denial in hw1 #4: trace `7323baf91f08afc9baa93206692c6ad6`
 - Token counts: OpenLLMetry 0.62.3 ignores `GenerationSpanData.usage` on the LiteLLM path; fixed with `_GenerationUsageProcessor` in `observability/instrument.py` plus an offline test; confirmed live (trace `74594d074a9b2704dc03da76ff0fd702`)
+- Part F: same request (hw1 #1, shopper 1, new session, reseeded, `claude-haiku-5-5`). Original `d108f6949e5e` (trace `a8ed5d9e99c651ed7069ebb193fdced6`) vs one-word edit (`helpful`) `3ab3fa8a8a68` (trace `408b9a9e2d54c963359e74f038942bc8`). Prompt restored via `git checkout`, server restarted, hash back to `d108f6949e5e`
 - `hw1-session.jsonl`: 10 observed conversations (live `claude-haiku-5-5`, reseeded before each). The four assessment fields are `"PENDING"` for Viktor
 
 ## Next
 
-- Part F: prompt version comparison (baseline hash `d108f6949e5e`)
 - Trace record: `hw2-traces.json`
 
 ## Known issue (existed before HW2, left as is by Viktor's choice)
@@ -34,7 +34,7 @@ First push: `git push -u origin wip/hw2`.
 - [x] Part D: `tests/test_observability.py` (wrong-role rejection, cross-session token rejection)
 - [ ] Part D checks (first two pass; full suite blocked by the known issue): `uv run pytest --runxfail tests/test_hw_holes.py -k hw2`, `uv run pytest tests/test_observability.py`, `uv run pytest`
 - [x] Part E: at least 5 traced requests from `hw1-session.jsonl`, inspected in Langfuse
-- [ ] Part F: two prompt version hashes recorded; original prompt restored
+- [x] Part F: two prompt version hashes recorded; original prompt restored
 - [ ] `hw2-traces.json`: exactly 2 traces with the 7 required fields
 - [ ] Video (Viktor)
 
