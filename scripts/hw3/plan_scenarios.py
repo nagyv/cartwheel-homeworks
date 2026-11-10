@@ -187,14 +187,7 @@ def scenario(
         "turn_count": turns,
         **(record or {}),
     }
-    writer = {
-        "role": role,
-        "goal": goal,
-        "user_visible_facts": visible,
-        "user_style": style,
-        "difficulty": difficulty,
-        "turn_count": turns,
-    }
+    writer = {"goal": goal, "user_visible_facts": visible}
     if store_name:
         writer["store_name"] = store_name
     return {

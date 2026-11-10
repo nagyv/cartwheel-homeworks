@@ -1,6 +1,6 @@
 # Writer prompt
 
-One independent writer subagent (Sonnet) runs per scenario. The orchestrator fills the template from one line of the plan file (`scenarios/plans/*.jsonl`). It uses the phrase tables below so that every writer receives identical wording. The writer never receives the plan's `tuple` identifiers, `expected`, or `data_quality_case_id`.
+One independent writer subagent (Sonnet) runs per scenario. The orchestrator fills the template from one line of the plan file (`scenarios/plans/*.jsonl`). It uses the phrase tables below so that every writer receives identical wording. The writer receives the plan's `writer` block (`goal`, `user_visible_facts`, and `store_name` for merchants) and only four tuple fields: `role`, `user_style`, `difficulty`, and `turn_count`. It never receives the other tuple fields (identifiers, `intent`, `record_state`, `applicable_policy`, `tools_needed`), `expected`, or `data_quality_case_id`.
 
 ## Role descriptions
 
