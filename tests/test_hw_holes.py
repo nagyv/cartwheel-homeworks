@@ -1,6 +1,6 @@
 """Contract tests for homework implementations.
 
-Each test is marked xfail(raises=NotImplementedError): it "fails as
+Tests for unfinished homework holes are marked xfail(raises=NotImplementedError): each "fails as
 expected" while the hole is unimplemented, and flips to passing (XPASS)
 once you implement the function correctly. If your implementation is wrong,
 the test fails loudly with an assertion error instead. Run the tests alongside the inspection steps in each homework.
@@ -35,7 +35,6 @@ def hw(n: int, name: str):
 # ---------------------------------------------------------------------------
 
 
-@hw(1, "get_policy")
 def test_hw1_get_policy(world: dict) -> None:
     result = tools.get_policy(SHOPPER_1, "cw-returns")
     assert result["ok"] is True
@@ -48,7 +47,6 @@ def test_hw1_get_policy(world: dict) -> None:
     assert missing["error"] == "not_found"
 
 
-@hw(1, "search_products")
 def test_hw1_search_products(world: dict) -> None:
     # Use a token guaranteed to exist: the last word of a real product title.
     conn = db.connect()
@@ -72,7 +70,6 @@ def test_hw1_search_products(world: dict) -> None:
     assert tools.search_products(SHOPPER_1, "mug", store="No Such Store")["error"] == "not_found"
 
 
-@hw(1, "list_my_orders")
 def test_hw1_list_my_orders(world: dict) -> None:
     conn = db.connect()
     try:
@@ -95,7 +92,6 @@ def test_hw1_list_my_orders(world: dict) -> None:
     assert support["error"] == "invalid_argument"
 
 
-@hw(1, "cancel_order")
 def test_hw1_cancel_order(world_copy: Path) -> None:
     conn = sqlite3.connect(world_copy)
     try:
@@ -133,7 +129,6 @@ def test_hw1_cancel_order(world_copy: Path) -> None:
     assert missing["error"] == "not_found"
 
 
-@hw(1, "find_order")
 def test_hw1_find_order(world: dict) -> None:
     # Shopper 1 owns order 4127, which contains a product.
     conn = sqlite3.connect(world["db"])
@@ -159,7 +154,6 @@ def test_hw1_find_order(world: dict) -> None:
 # ---------------------------------------------------------------------------
 
 
-@hw(2, "create_session")
 def test_hw2_create_session_binds_verified_identity(world: dict) -> None:
     from server import app as server_app
 
@@ -860,7 +854,6 @@ def test_m2_submission_has_a_frozen_judge_per_split_mode() -> None:
         assert mode in frozen_modes, f"{mode}: no frozen judge (freeze before reporting)"
 
 
-@hw(1, "find_order")
 @pytest.mark.parametrize("ctx,scope", [(SHOPPER_1, "shopper"), (AuthContext(user_id=9002, role="merchant", store_id=2), "merchant"), (SUPPORT, "support")])
 def test_hw1_find_order_roles_and_old_matches(order_search_cases, ctx, scope):
     title, expected = order_search_cases
