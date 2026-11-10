@@ -4,16 +4,17 @@ Interactive walkthrough of `homework/module-1/hw3.md`. Claude proposes each step
 
 ## Next
 
-- Preparation: choose the agent model, seed the data, check Langfuse, start the server, run one smoke request
+- Part A: Viktor brainstorms dimensions; query `data_quality_cases`; then Claude proposes the combined plan for approval
 
 ## Done
 
 - Step 0: branch `wip/hw3`, `.sessions.db-*` added to `.gitignore`, this note created
+- Step 1: kept `claude-haiku-5-5` (Viktor's choice); seeded; Langfuse up; server on :8010 (Claude runs it in the background); smoke scenario `smoke-0001` (scratchpad only) produced a trace with messages, model, `list_my_orders` call and result, scenario id, token usage; reseeded afterwards
 
 ## Steps
 
 - [x] 0. Housekeeping
-- [ ] 1. Preparation (model in `.env` and the runner `--model` value must match)
+- [x] 1. Preparation (model in `.env` and the runner `--model` value must match)
 - [ ] 2. Part A: dimension plan, **approved by Viktor**
 - [ ] 3. Part B: 30 pilot scenarios generated, validated, conversation sample **accepted by Viktor**
 - [ ] 3b. Part B: pilot run, at least 10 results **reviewed by Viktor**, at least 5 confirmed failures
@@ -41,4 +42,4 @@ Interactive walkthrough of `homework/module-1/hw3.md`. Claude proposes each step
 
 - `homework/module-1/AGENTS.md` does not exist; the root `AGENTS.md` applies
 - HW2 is merged into `main`, so do not apply `hw2-reference.patch`
-- `.env` has `CARTWHEEL_MODEL=claude-haiku-5-5`, which may be too strong to produce 5 failures (the handout suggests `claude-haiku-4-5`); decide at Preparation
+- Agent model: `claude-haiku-5-5` (kept by Viktor despite the risk of too few failures). Fallback if the pilot finds fewer than 5: add 20 challenge scenarios, or switch to a weaker model
